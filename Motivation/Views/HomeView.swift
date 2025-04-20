@@ -8,24 +8,55 @@ struct HomeView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             
-            // daily Qquote Tab
+            // daily quote tab
             NavigationStack {
-                ScrollView {
-                    DailyQuoteSection(quote: viewModel.dailyQuote, favoritesManager: favoritesManager)
-                        .padding(.top)
+                GeometryReader { geometry in
+                    ZStack {
+                        // Background image
+                        if let imageURL = viewModel.dailyQuote?.imageURL {
+                            AsyncImage(url: imageURL) { phase in
+                                switch phase {
+                                case .empty:
+                                    Color.blue.opacity(0.1)
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                        .blur(radius: 20)
+                                        .overlay(Color.blue.opacity(0.3))
+                                        .ignoresSafeArea()
+                                case .failure:
+                                    Color.blue.opacity(0.3)
+                                @unknown default:
+                                    EmptyView()
+                                }
+                            }
+                        } else {
+                            Color.blue.opacity(0.3)
+                                .ignoresSafeArea()
+                        }
+                        // Center the DailyQuoteSection
+                        if viewModel.isLoading {
+                            DailyQuoteShimmerPlaceholder()
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.trailing, 430)
+                        } else {
+                            DailyQuoteSection(
+                                quote: viewModel.dailyQuote,
+                                favoritesManager: favoritesManager,
+                                maxWidth: geometry.size.width,
+                                maxHeight: geometry.size.height
+                            )
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.trailing, 430)
+                        }
+
+                    }
+                    
+                    
                 }
                 .navigationTitle("Daily Quote")
-//                .toolbar {
-//                    ToolbarItem(placement: .navigationBarTrailing) {
-//                        NavigationLink(destination: FavoritesView(favoritesManager: favoritesManager)) {
-//                            Image(systemName: "heart.fill")
-//                                .foregroundColor(.red)
-//                        }
-//                    }
-//                }
-                .task {
-                    await viewModel.loadQuotes()
-                }
+                .task {await viewModel.loadQuotes()}
             }
             .tabItem {
                 Label("Daily", systemImage: "sun.max.fill")
@@ -36,7 +67,8 @@ struct HomeView: View {
             NavigationStack {
                 ScrollView {
                     if viewModel.isLoading {
-                        ProgressView("Loading...")
+                        DailyQuoteShimmerPlaceholder()
+                            .frame(maxWidth: .infinity, alignment: .center)
                             .padding()
                     } else if let error = viewModel.errorMessage {
                         ErrorSection(error: error) {
@@ -59,7 +91,7 @@ struct HomeView: View {
             }
             .tag(1)
 
-            // favorites tab
+            // favorites Tab
             NavigationStack {
                 FavoritesView(favoritesManager: favoritesManager)
             }
@@ -70,3 +102,28 @@ struct HomeView: View {
         }
     }
 }
+
+
+
+
+//                ScrollView {
+//                    DailyQuoteSection(quote: viewModel.dailyQuote, favoritesManager: favoritesManager)
+//                        .padding(.top)
+//                }
+//                .navigationTitle("Daily Quote")
+////                .toolbar {
+////                    ToolbarItem(placement: .navigationBarTrailing) {
+////                        NavigationLink(destination: FavoritesView(favoritesManager: favoritesManager)) {
+////                            Image(systemName: "heart.fill")
+////                                .foregroundColor(.red)
+////                        }
+////                    }
+////                }
+//                .task {
+//                    await viewModel.loadQuotes()
+//                }
+//            }
+//            .tabItem {
+//                Label("Daily", systemImage: "sun.max.fill")
+//            }
+//            .tag(0)

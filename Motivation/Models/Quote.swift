@@ -7,7 +7,6 @@ struct Quote: Identifiable, Codable, Hashable {
     var text: String { q }
     var author: String { a }
     var imageURL: URL?
-    
 }
 
 
