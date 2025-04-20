@@ -1,10 +1,3 @@
-//
-//  ShimmerViewModifier.swift
-//  Motivation
-//
-//  Created by Dr.Galal Ahmed  on 20/04/2025.
-//
-
 import SwiftUI
 
 struct Shimmer: ViewModifier {
